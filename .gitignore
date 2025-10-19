@@ -1,0 +1,5 @@
+# Secrets
+.env
+
+# Django cache
+__pycache__/
