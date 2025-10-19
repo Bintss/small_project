@@ -17,6 +17,21 @@ class GymSerializer(serializers.ModelSerializer):
 class CourtSerializer(serializers.ModelSerializer):
     class Meta:
         model = Court
-        fields = ['id', 'gym', 'name', 'description']
-        # gym 필드는 URL을 통해 자동으로 입력받을 것이므로, 읽기 전용으로 설정
-        read_only_fields = ['gym']        
+        fields = ['id', 'name', 'description']
+
+# GymListSerializer (목록 조회용)
+class GymListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gym
+        # 목록에서는 간단한 정보만 보여줍니다.
+        fields = ['id', 'name', 'address', 'phone_number']
+
+# GymDetailSerializer (상세 조회용)
+class GymDetailSerializer(serializers.ModelSerializer):
+    # 해당 체육관에 속한 코트들의 정보를 함께 보여줍니다.
+    courts = CourtSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Gym
+        # 상세 정보에서는 모든 필드와 관련 코트 목록을 보여줍니다.
+        fields = ['id', 'name', 'address', 'phone_number', 'description', 'courts']

@@ -1,26 +1,15 @@
 # gyms/urls.py
-from django.urls import path
-from .views import GymCreateView, CourtViewSet
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CourtViewSet, GymViewSet # GymCreateView는 이제 사용 안 함
 
-# .as_view()와 딕셔너리를 사용해 HTTP 메소드와 ViewSet 동작을 연결합니다.
-court_list = CourtViewSet.as_view({
-    'get': 'list',      # GET 요청은 'list' (목록 조회) 동작으로
-    'post': 'create'    # POST 요청은 'create' (생성) 동작으로
-})
-
-court_detail = CourtViewSet.as_view({
-    'get': 'retrieve',  # GET 요청은 'retrieve' (상세 조회) 동작으로
-    'put': 'update',    # PUT 요청은 'update' (수정) 동작으로
-    'delete': 'destroy' # DELETE 요청은 'destroy' (삭제) 동작으로
-})
+router = DefaultRouter()
+# /gyms 주소에 GymViewSet을 등록. 이제 GET, POST, PUT, DELETE 모두 처리
+router.register(r'gyms', GymViewSet, basename='gym')
 
 urlpatterns = [
-    # POST /api/gyms/ -> 체육관 생성
-    path('gyms/', GymCreateView.as_view(), name='gym-create'),
-
-    # GET, POST /api/gyms/<int:gym_pk>/courts/ -> 특정 체육관의 코트 목록 조회 및 생성
-    path('gyms/<int:gym_pk>/courts/', court_list, name='court-list'),
-
-    # GET, PUT, DELETE /api/gyms/<int:gym_pk>/courts/<int:pk>/ -> 특정 코트 상세 조회, 수정, 삭제
-    path('gyms/<int:gym_pk>/courts/<int:pk>/', court_detail, name='court-detail'),
+    path('', include(router.urls)),
+    # 아래는 코트 관련 URL들 (기존과 동일)
+    path('gyms/<int:gym_pk>/courts/', CourtViewSet.as_view({'get': 'list', 'post': 'create'}), name='court-list'),
+    path('gyms/<int:gym_pk>/courts/<int:pk>/', CourtViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='court-detail'),
 ]

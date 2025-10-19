@@ -2,19 +2,11 @@ from django.shortcuts import render
 
 # gyms/views.py
 from rest_framework import generics, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Gym, Court
-from .serializers import GymSerializer, CourtSerializer
+from .serializers import GymSerializer, CourtSerializer, GymListSerializer, GymDetailSerializer
 from .permissions import IsGymOwner
 
-class GymCreateView(generics.CreateAPIView):
-    queryset = Gym.objects.all()
-    serializer_class = GymSerializer
-    permission_classes = [IsAuthenticated] # 오직 인증된 사용자만 체육관을 등록할 수 있음
-
-    def perform_create(self, serializer):
-        # serializer.save()가 호출될 때, owner 필드를 현재 로그인한 사용자로 자동 설정
-        serializer.save(owner=self.request.user)
 
 # CourtViewSet
 class CourtViewSet(viewsets.ModelViewSet):
@@ -31,3 +23,28 @@ class CourtViewSet(viewsets.ModelViewSet):
         gym = Gym.objects.get(pk=self.kwargs['gym_pk'])
         self.check_object_permissions(self.request, gym) # IsGymOwner 권한 확인
         serializer.save(gym=gym)
+
+# GymViewSet
+class GymViewSet(viewsets.ModelViewSet): # ReadOnlyModelViewSet -> ModelViewSet으로 변경
+    queryset = Gym.objects.all()
+
+    # 어떤 Serializer를 쓸지 결정
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return GymListSerializer
+        elif self.action == 'retrieve':
+            return GymDetailSerializer
+        # 생성(create) 시에는 기존의 GymSerializer를 사용
+        return GymSerializer
+
+    # 어떤 권한을 적용할지 결정
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']: # 목록/상세 조회는
+            permission_classes = [AllowAny] # 누구나 허용
+        else: # 그 외(생성, 수정, 삭제)는
+            permission_classes = [IsAuthenticated] # 로그인한 사용자만 허용
+        return [permission() for permission in permission_classes]
+
+    # 생성(create) 시 owner를 현재 사용자로 자동 설정
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
