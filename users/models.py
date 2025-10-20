@@ -29,16 +29,16 @@ class User(AbstractBaseUser):
     email = models.EmailField(
         verbose_name='email address',
         max_length=255,
-        unique=True, # 이메일은 유일해야 합니다.
+        unique=True, # 이메일은 유일.
     )
     name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
-    objects = UserManager() # 위에서 만든 UserManager를 사용합니다.
+    objects = UserManager() # 위에서 만든 UserManager를 사용.
 
-    USERNAME_FIELD = 'email'  # 로그인 ID로 이메일을 사용합니다.
-    REQUIRED_FIELDS = ['name'] # 슈퍼유저 생성 시 이름도 필수로 받습니다.
+    USERNAME_FIELD = 'email'  # 로그인 ID로 이메일을 사용.
+    REQUIRED_FIELDS = ['name'] # 슈퍼유저 생성 시 이름도 필수 입력.
 
     def __str__(self):
         return self.email
