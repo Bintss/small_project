@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .serializers import ReservationSerializer
+from .serializers import ReservationSerializer, MyReservationListSerializer
 from .models import Reservation
 from gyms.models import Court
 import datetime
@@ -75,3 +75,20 @@ class ReservationCreateView(generics.CreateAPIView):
         # Serializer가 예약을 저장(create)할 때,
         # user 필드를 현재 로그인한 사용자로 자동 설정
         serializer.save(user=self.request.user)
+
+# MyReservationListView
+class MyReservationListView(generics.ListAPIView):
+    serializer_class = MyReservationListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # 1. 현재 요청을 보낸 사용자(로그인한 사용자)를 가져옵니다.
+        user = self.request.user
+
+        # 2. Reservation 모델에서 user가 현재 사용자인 예약만 필터링합니다.
+        # 3. select_related('court', 'court__gym')로 DB 효율 최적화!
+        #    (예약 정보, 코트 정보, 체육관 정보를 DB에서 한 번에 가져옵니다)
+        # 4. 날짜순으로 정렬합니다.
+        return Reservation.objects.filter(user=user) \
+                                  .select_related('court', 'court__gym') \
+                                  .order_by('reservation_date', 'start_time')

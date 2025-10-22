@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from .models import Reservation
 import datetime
+from gyms.serializers import CourtSerializer
 
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,3 +41,13 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("요청한 시간대에 이미 다른 예약이 존재합니다.")
 
         return data
+    
+# MyReservationListSerializer
+class MyReservationListSerializer(serializers.ModelSerializer):
+    # court 필드를 단순 ID가 아닌, CourtSerializer의 '중첩된' 정보로 보여줍니다.
+    court = CourtSerializer(read_only=True)
+
+    class Meta:
+        model = Reservation
+        # 응답으로 보여줄 필드들을 지정
+        fields = ['id', 'court', 'reservation_date', 'start_time', 'end_time']

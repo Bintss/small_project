@@ -17,7 +17,7 @@ class GymSerializer(serializers.ModelSerializer):
 class CourtSerializer(serializers.ModelSerializer):
     class Meta:
         model = Court
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'gym', 'name', 'description'] # 'gym' 필드 (ID) 포함
 
 # GymListSerializer (목록 조회용)
 class GymListSerializer(serializers.ModelSerializer):
